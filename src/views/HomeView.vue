@@ -1,6 +1,6 @@
 <template>
-    <div class="w-[100vw] h-[100vh] flex flex-wrap justify-center items-start">
-        <div class="w-full mt-4 flex flex-wrap justify-center items-center gap-y-2">
+    <div class="w-[100vw] h-[100vh] flex flex-col justify-start items-center gap-y-5">
+        <div class="w-full mt-2 md:mt-4 flex flex-wrap justify-center items-start gap-y-1 md:gap-y-2">
             <div class="w-full flex flex-wrap justify-center items-center gap-y-2">
                 <div class="w-full md:w-1/2 flex flex-wrap justify-center md:justify-end items-center">
                     <span class="mx-2 text-base font-medium text-gray-900">輸入檔案名稱</span>
@@ -26,24 +26,25 @@
                         <option v-for="(item,index) in columnList" :key="index" :value="item.value">{{item.name}}</option>
                     </select>
                 </div>
-                
-                
             </div>
-            <!-- <div class="w-full flex flex-wrap justify-center items-center">
+            <div class="w-full flex flex-wrap justify-center items-center">
                 <span class="mx-2 text-base font-medium text-gray-900 ">品牌</span>
-                <select multiple v-model="inputData.brand" class="w-3/4 bg-gray-50 border border-gray-300 text-gray-900 text-base rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ">
-                    <option v-for="(item,index) in brandOptions" :key="index" :value="item.value">{{item.name}}</option>
-                </select>
-            </div> -->
-            
-            
+                <multiselect 
+                    class="w-4/5 md:w-1/3"
+                    v-model="inputData.brand" 
+                    :options="brandOptions"
+                    :multiple="true"
+                    track-by="value"
+                    :custom-label="customLabel"
+                    >
+                </multiselect>
+            </div>
         </div>
         <div class="w-full flex flex-wrap justify-center items-center">
-            <div class="drop-zone w-[240px] h-[120px] md:w-[500px] md:h-[250px] flex-col mine-flex-center cursor-pointer border-[#009578] border-4 rounded-2xl bg-[#e0ffb5]" ref="fileDiv" :class="[borderStyle ? 'border-solid' : 'border-dashed',]"
+            <div class="drop-zone w-[240px] h-[100px] md:w-[500px] md:h-[250px] flex-col mine-flex-center cursor-pointer border-[#009578] border-4 rounded-2xl bg-[#e0ffb5]" ref="fileDiv" :class="[borderStyle ? 'border-solid' : 'border-dashed',]"
                 @click="choseFile"><span>匯入xlsx檔案</span><input class="drop-zone__input hidden" ref="fileInput" type="file" name="myFile" @change="changeFile" />
             </div>
         </div>
-        
         <div class="w-full flex flex-wrap justify-center items-center gap-2">
             <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="download">download</button>
             <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"  @click="clear">clear</button>
@@ -60,7 +61,8 @@ import { useI18n } from 'vue-i18n'
 import * as XLSX from 'xlsx/xlsx.mjs'
 // import fs from 'vite-plugin-fs/browser';
 import { writeFile } from "xlsx";
-
+import Multiselect from 'vue-multiselect'
+import 'vue-multiselect/dist/vue-multiselect.css'
 // const { t,locale } = useI18n()
 
 let allData = null
@@ -120,26 +122,47 @@ const inputData = ref({
     brandColumn:'B',
     priceColumn:'D',
     discount:0.65,
-    brand:['NFB','ELCB','MS','MC']
+    brand:[
+        {
+            value: 'NFB',
+            name: 'NFB',
+        },
+        {
+            value: 'ELCB',
+            name: 'ELCB',
+        },
+        {
+            value: 'MS',
+            name: 'MS',
+        },
+        {
+            value: 'MC',
+            name: 'MC',
+        },
+    ]
 })
-// const brandOptions = [
-//   {
-//     value: 'NFB',
-//     name: 'NFB',
-//   },
-//   {
-//     value: 'ELCB',
-//     name: 'ELCB',
-//   },
-//   {
-//     value: 'MS',
-//     name: 'MS',
-//   },
-//   {
-//     value: 'MC',
-//     name: 'MC',
-//   },
-// ]
+const brandOptions = [
+  {
+    value: 'NFB',
+    name: 'NFB',
+  },
+  {
+    value: 'ELCB',
+    name: 'ELCB',
+  },
+  {
+    value: 'MS',
+    name: 'MS',
+  },
+  {
+    value: 'MC',
+    name: 'MC',
+  },
+]
+
+const customLabel = (option) => {
+    return `${option.name}`
+}
 
 const choseFile = () => {
     fileInput.value.click()
@@ -163,7 +186,6 @@ const dealFile = (file) => {
         const wb = XLSX.read(data, {type:'array'})
         allData = wb
         // console.log('allData',allData)
-        
     }
 }
 
@@ -192,16 +214,14 @@ const checkNumber = (value) => {
     }
 }
 
-//NFB ELCB MS MC
 const checkBrand = (name) => {
     if(typeof name != "string"){
         return false
     }
-    let brand = ['NFB','ELCB','MS','MC']
+    let brand = inputData.value.brand.map((item)=>item.value)
     let value = name.trim()
     return brand.includes(value) 
 }
-
 
 const download = () => {
     if(!allData){
@@ -249,17 +269,3 @@ const download = () => {
 
 }
 </script>
-
-<style scoped>
-:deep(.el-select__wrapper){
-    width: 150px;
-}
-
-@media screen and (min-width: 768px) {
-    :deep(.el-select__wrapper){
-        width: 400px;
-    }
-}
-
-
-</style>
